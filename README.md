@@ -4,6 +4,8 @@ This is just a small project for my homebrewing calculations. Sometimes, when br
 therefore the IBU resulting from hops addition would be higher than expected. With this simple calculator I can recalculate the amount of hops to add to obtain
 the same IBU as in the recipe.
 
+The OG Post Boil Calculator lets you estimate what the SG will be in your fermentor given a starting volume, a desired volume and the gravity before boil.
+The IBU calculator will recalculate the amount of hops to add during boil given starting conditions.
 
 # Reference
 
