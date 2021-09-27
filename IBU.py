@@ -1,110 +1,82 @@
-import math
+from homebrewing_func import tinseth, calculate_postboil_sg, make_ordinal
+import re
 
 # -------------------------
 # Inputs
 # -------------------------
 ordinali = ['prima', 'seconda', 'terza', 'quarta', 'quinta', 'sesta', 'settima', 'ottava', 'nona', 'decima']
-try:
-    bugu = float(input("Inserire il rapporto BU:GU desiderato"))  # 0.82 #rapporto bu:gu che si vuole ottenere
-except:
-    print("ATTENZIONE: L'input dev'essere nel formato X.XX")
-    bugu = float(input("Inserire il rapporto BU:GU desiderato"))  # 0.82 #rapporto bu:gu che si vuole ottenere
-try:
-    sg_preboil = float(input(
-        "Inserire il SG misurato prima della bollitura (Formato 1.XXX)"))  # 1.043 #sg misurata prima della bollitura
-except:
-    print("ATTENZIONE: L'input dev'essere nel formato X.XX")
-    sg_preboil = float(input(
-        "Inserire il SG misurato prima della bollitura (Formato 1.XXX)"))  # 1.043 #sg misurata prima della bollitura
-while sg_preboil > 1.5:
-    print("ATTENZIONE: Valore di SG errato")
-    float(input(
-        "Inserire il SG misurato prima della bollitura (Formato 1.XXX)"))  # 1.043 #sg misurata prima della bollitura
+
+bugu = input("Insert BU:GU ratio you desire to obtain")  # example 0.82
+while not re.match('^[0-1].[0-9]{2}$', bugu):
+    print("ERROR: The input has to be in the format X.XX")
+    bugu = input("Insert BU:GU ratio you desire to obtain")
+bugu = float(bugu)
+
+sg_preboil = input("Insert measured SG before boiling (Format 1.XXX)")  # example 1.043
+while not re.match('^1.[0-5][0-9]{2}$', sg_preboil):
+    print("ERROR: The input has to be in the OG format X.XXX and smaller than 1.5")
+    sg_preboil = input("Insert measured SG before boiling (Format 1.XXX)")
+sg_preboil = float(sg_preboil)
 
 boil_vol = float(
-    input("Inserire il volume del mosto prima della bollitura (Litri)"))  # 12 #volume prima della bollitura
+    input("Insert volume before boiling (Liters)"))  # example 12 --> the volume before boiling
 exp_vol = float(input(
-    "Inserire il volume finale nel fermentatore, icluso eventuale rabbocco (Litri)"))  # volume finale in fermentatore
+    "Inserire final fermentor volume including top-ups (Liters)"))  # example 9 --> # final volume in fermentor
 while boil_vol < exp_vol:
-    print("ATTENZIONE: Il volume prima della bollitura non può essere minore del volume finale")
+    print("ERROR: The pre-boil volume cannot be smallert than final volume")
     boil_vol = float(
-        input("Inserire il volume del mosto prima della bollitura (Litri)"))  # 12 #volume prima della bollitura
+        input("Insert volume before boiling (Liters)"))
     exp_vol = float(input(
-        "Inserire il volume finale nel fermentatore, icluso eventuale rabbocco (Litri)"))  # volume finale in fermentatore
-num_gettate = int(input("Numero di gettate"))
+        "Inserire final fermentor volume including top-ups (Liters)"))
+
+num_gettate = int(input("Insert the number of hops addition"))  # How many times during boil you add hops
 if num_gettate > 1:
-    diffl = input("La percentuale di alpha acidi è diversa da una gettata all'altra? (S/N)")
-    while diffl not in ["S", "s", "N", "n"]:
-        print("ATTENZIONE: Risposta invalida")
-        diffl = input("La percentuale di alpha acidi è diversa da una gettata all'altra? (S/N)")
-    if diffl in ["N", "n", "No", "no", "NO"]:
-        aa1 = float(input("Inserire la percentuale di alpha acidi (X.X%)"))
+    diffl = input("Is the AA% different from one addition to the other? (Y/N)")
+    while diffl not in ["Y", "y", "N", "n"]:
+        print("ERROR: Invalid answer")
+        diffl = input("Is the AA% different from one addition to the other? (Y/N)")
+    if diffl in ["N", "n"]:
+        aa1 = float(input("Insert the AA% (X.X%)"))
         for i in range(num_gettate):
             i = i + 2
             program = "aa" + str(i) + "=" + "aa1"
             exec(program)
-    elif diffl in diffl in ["S", "s", "si", "Sì", "SI"]:
+    elif diffl in diffl in ["Y", "y"]:
         for k in range(num_gettate):
             k = k + 1
-            t = input("Inserire la percentuale di alpha acidi (X.X%) della " + str(k) + "a gettata")
+            t = input(f'Insert the AA%  of the {make_ordinal(k)} addition (X.X%)')
             program = "t" + str(k) + "=" + str(t)
             exec(program)
 else:
-    aa1 = float(input("Inserire la percentuale di alpha acidi (X.X%)"))
+    aa1 = float(input("Insert the AA% (X.X%)"))
 
 for k in range(num_gettate):
     k = k + 1
-    t = input("Inserire il tempo di bollitura della " + str(k) + "a gettata (minuti)")
+    t = input(f'Insert boiling time of the {make_ordinal(k)} addition (minutes)')
     program = "t" + str(k) + "=" + str(t)
     exec(program)
 
 for k in range(num_gettate):
     k = k + 1
-    t = input("Inserire la quantità di luppolo (grammi) nella " + str(k) + "a gettata")
+    t = input(f'Insert weight in grams of the {make_ordinal(k)} addition (grams)')
     program = "w" + str(k) + "=" + str(t)
     exec(program)
 
-unit = "g"
-
-
 # -------------------------
-# Functions
-# -------------------------
-
-def tinseth(alphaacid, peso, SG, tempo, volumefinale, unitapeso='g'):
-    if unitapeso == 'g':
-        peso = peso / 28.35
-    elif unitapeso == 'kg':
-        peso = (peso * 1000) / 28.35
-    elif unitapeso == 'lb':
-        peso = peso * 16
-
-    ibu = (75 * (alphaacid * peso) * (1.65) * 0.000125 ** (SG - 1) * ((1 - math.exp(-0.4 * tempo)))) / volumefinale
-    return ibu
-
-
-def calculate_postboil_sg(sg_preboil, boil_vol, exp_vol):
-    brix = 143.254 * sg_preboil ** 3 - 648.670 * sg_preboil ** 2 + 1125.805 * sg_preboil - 620.389  # Trasformo SG in brix
-    gL = sg_preboil * (brix * 10)  # ottengo g di zuccheri disciolti in 1 L g/L
-    gL = (gL * boil_vol) / exp_vol  # ricacolo la concentrazione nel volume finale
-    sg = (0.3781 * gL + 998.521) / 1000  # riconverto in sg
-    return sg
-
-
-# -------------------------
-# Calcolo IBU stimata
+# Estimate IBU calculation
 # -------------------------
 
 g = calculate_postboil_sg(sg_preboil, boil_vol, exp_vol)
-print("SG stimata: " + str(round(g,3)))
+print("Estimated SG in fermentor will be :" + str(round(g, 3)))
 ibu = 0
 for k in range(num_gettate):
     k = str(k + 1)
-program = "ibu+=tinseth(aa" + k + "," + "w" + k + ",g,t" + k + ",exp_vol,unitapeso=unit)"
-exec(program)
+    program = f'ibu+=tinseth(aa{k},w{k},g,t{k},exp_vol)'
+    exec(program)
 
 if ibu < 0:
-    exit("ERRORE: IBU negativo. Chiudere e riaprire il programma e verificare gli input.")
+    exit("ERRORE: IBU cannot be negative, please close the program and start again being careful to "
+         "input correct data.")
 
 # -------------------------
 # Calcolo IBU necessaria per BUGU
@@ -115,14 +87,15 @@ if diff < 1:
     ibu2 = 0
     for k in range(num_gettate):
         k = str(k + 1)
-    program = "ibu2+=tinseth(aa" + k + "," + "(w" + k + "-w" + k + "*diff)" + ",g,t" + k + ",exp_vol,unitapeso=unit)"
+    program = f'ibu2+=tinseth(aa{k},w{k},g,t{k},exp_vol)'
     exec(program)
-    program = "f=str(round(w" + k + "-w" + k + "*diff))"
+    program = f'f=str(round(w{k}-w{k}*diff))'
     exec(program)
     program = "d=w" + k
     exec(program)
-    print("Utilizzare " + f + unit + " invece di " + str(d) + unit + " nella prima gettata")
-    print("Per un totale di " + str(round(ibu2)) + " IBU con rapporto BU:GU di " + str(round(ibu2 / ((g - 1) * 1000), 2)))
-    print("IBU originale: " + str(round(ibu)))
+    print(f"Use {f} {unit} instead of {d} {unit} in the first addition")
+    print(
+        "For a total of " + str(round(ibu2)) + " IBU with BU:GU ratio of " + str(round(ibu2 / ((g - 1) * 1000), 2)))
+    print("Original IBU : " + str(round(ibu)))
 elif diff == 0:
-    print("Quantità di luppolo non necessita di correzioni.")
+    print("No need for corrections in the hops additions")
