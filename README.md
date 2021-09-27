@@ -8,7 +8,7 @@ The OG Post Boil Calculator lets you estimate what the SG will be in your fermen
 The IBU calculator will recalculate the amount of hops to add during boil given starting conditions.
 
 
-* IBU is a unit of measure of alpha-acids extracted from hops into the wort during boil and is, therefore, a measurement of bitterness in beer.
+* IBU is a unit of measure of alpha-acids extracted from hops into the wort during boil and is, therefore, a measurement of bitterness in beer. Correctly regulating the amount of bitterness relative to the sugar content of the final product is very important to make a good homebrew.
 
 # Reference
 
